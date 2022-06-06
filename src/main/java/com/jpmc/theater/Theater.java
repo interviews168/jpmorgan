@@ -8,15 +8,17 @@ import java.util.concurrent.TimeUnit;
 
 public class Theater {
 
-    LocalDateProvider provider;
+    private LocalDateProvider provider;
     private List<Showing> schedule;
+    private static final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+
+    private static final Movie spiderMan = new Movie("Spider-Man: No Way Home", Duration.ofMinutes(90), 12.5, 1);
+    private static final Movie turningRed = new Movie("Turning Red", Duration.ofMinutes(85), 11, 0);
+    private static final Movie theBatMan = new Movie("The Batman", Duration.ofMinutes(95), 9, 0);
 
     public Theater(LocalDateProvider provider) {
         this.provider = provider;
 
-        Movie spiderMan = new Movie("Spider-Man: No Way Home", Duration.ofMinutes(90), 12.5, 1);
-        Movie turningRed = new Movie("Turning Red", Duration.ofMinutes(85), 11, 0);
-        Movie theBatMan = new Movie("The Batman", Duration.ofMinutes(95), 9, 0);
         schedule = List.of(
             new Showing(turningRed, 1, LocalDateTime.of(provider.currentDate(), LocalTime.of(9, 0))),
             new Showing(spiderMan, 2, LocalDateTime.of(provider.currentDate(), LocalTime.of(11, 0))),
@@ -45,30 +47,37 @@ public class Theater {
         System.out.println(provider.currentDate());
         System.out.println("===================================================");
         schedule.forEach(s ->
-                System.out.println(s.getSequenceOfTheDay() + ": " + s.getStartTime() + " " + s.getMovie().getTitle() + " " + humanReadableFormat(s.getMovie().getRunningTime()) + " $" + s.getMovieFee())
+                System.out.println(s.getSequenceOfTheDay() + ": " + s.getStartTime()
+                    + " " + s.getMovie().getTitle() + " "
+                    + humanReadableFormat(s.getMovie().getRunningTime()) + " $" + s.getMovieFee())
+        );
+        System.out.println("===================================================");
+    }
+
+    public void printScheduleJSON() {
+        System.out.println(provider.currentDate());
+        System.out.println("===================================================");
+        schedule.forEach(s ->
+                System.out.println(ow.writeValueAsString(s);            
         );
         System.out.println("===================================================");
     }
 
     public String humanReadableFormat(Duration duration) {
-        long hour = duration.toHours();
-        long remainingMin = duration.toMinutes() - TimeUnit.HOURS.toMinutes(duration.toHours());
+        final long hour = duration.toHours();
+        final long remainingMin = duration.toMinutes() - TimeUnit.HOURS.toMinutes(duration.toHours());
 
         return String.format("(%s hour%s %s minute%s)", hour, handlePlural(hour), remainingMin, handlePlural(remainingMin));
     }
 
     // (s) postfix should be added to handle plural correctly
     private String handlePlural(long value) {
-        if (value == 1) {
-            return "";
-        }
-        else {
-            return "s";
-        }
+        return value == 1 ? "" : "s";
     }
 
     public static void main(String[] args) {
-        Theater theater = new Theater(LocalDateProvider.singleton());
+        final Theater theater = new Theater(LocalDateProvider.singleton());
         theater.printSchedule();
+        theater.printScheduleJSON();
     }
 }

@@ -32,28 +32,30 @@ public class Movie {
     }
 
     public double calculateTicketPrice(Showing showing) {
-        return ticketPrice - getDiscount(showing.getSequenceOfTheDay());
+        return ticketPrice - getDiscount(showing.getSequenceOfTheDay(), showing.getStartTime());
     }
 
-    private double getDiscount(int showSequence) {
-        double specialDiscount = 0;
-        if (MOVIE_CODE_SPECIAL == specialCode) {
-            specialDiscount = ticketPrice * 0.2;  // 20% discount for special movie
+    private double getDiscount(int showSequence, LocalDateTime showStartTime) {
+        double maxDiscount = 0;
+        if (showStartTime >= 11 && showStartTime <= 16) {
+            maxDiscount = ticketprice * 0.25;
+        }
+        else if (MOVIE_CODE_SPECIAL == specialCode) {
+            maxDiscount = ticketPrice * 0.2;  // 20% discount for special movie
         }
 
-        double sequenceDiscount = 0;
-        if (showSequence == 1) {
-            sequenceDiscount = 3; // $3 discount for 1st show
-        } else if (showSequence == 2) {
-
-            sequenceDiscount = 2; // $2 discount for 2nd show
+        if (maxDiscount < 3) {
+            if (showSequence == 1) {
+                maxDiscount = 3; // $3 discount for 1st show
+            } else if (showSequence == 2) {
+                maxDiscount = 2; // $2 discount for 2nd show
+            } else if (showSequence == 7) {
+                maxDiscount = 1; // $1 discount for 7th show
+            }   
         }
-//        else {
-//            throw new IllegalArgumentException("failed exception");
-//        }
 
         // biggest discount wins
-        return specialDiscount > sequenceDiscount ? specialDiscount : sequenceDiscount;
+        return maxDiscount;
     }
 
     @Override
